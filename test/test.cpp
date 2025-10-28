@@ -23,7 +23,7 @@ int main(void) {
 	try {
 	Test test;
 	test.run_tests();
-	} catch (std::runtime_error& e) {
+	} catch (const std::runtime_error& e) {
 		std::cerr << e.what() << "\n";
 	}
 	ctest_print_results();
