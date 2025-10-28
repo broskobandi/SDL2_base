@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace Sdl2Base;
+using namespace SDL2_Base;
 
 struct Test {
 	void run_tests() {

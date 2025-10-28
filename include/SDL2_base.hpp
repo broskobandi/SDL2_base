@@ -45,7 +45,7 @@ SOFTWARE.
 #define DBGMSG(message)
 #endif
 
-namespace Sdl2Base {
+namespace SDL2_Base {
 
 // Custom types
 
@@ -125,14 +125,14 @@ private:
 
 	/** Struct to handle initialization and termination of SDL2.
 	 * Throws runtime_error on failure. */
-	struct Sdl {
+	struct SDL {
 		Uint32 flags;
-		Sdl(Uint32 flags) : flags(flags) {
+		SDL(Uint32 flags) : flags(flags) {
 			if (SDL_Init(flags))
 				throw std::runtime_error("Failed to init SDL2.");
 		DBGMSG("SDL context initialized.");
 		}
-		~Sdl() {
+		~SDL() {
 			DBGMSG("Terminating SDL context.");
 			SDL_Quit();
 		}
@@ -140,7 +140,7 @@ private:
 
 	// Variables
 
-	Sdl sdl;
+	SDL sdl;
 	Window win;
 	Renderer ren;
 	std::vector<Texture> textures;
