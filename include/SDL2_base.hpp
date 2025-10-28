@@ -45,6 +45,75 @@ SOFTWARE.
 #define DBGMSG(message)
 #endif
 
+namespace Sdl2Base {
+
+// Custom types
+
+using Window = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
+using Renderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>;
+using Surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
+using Texture = std::shared_ptr<SDL_Texture>;
+
+/** Struct to store information about an object's dimensions as integers.
+ * It defines operator<, so it can be used in a map or unordered_map. 
+ * It also defines operator==. */
+struct Dimensions {
+	int w, h;
+	bool operator<(const Dimensions& other) const {
+		if (w == other.w)
+			return h < other.h;
+		return w < other.w;
+	}
+	bool operator==(const Dimensions& other) const {
+		return w == other.w && h == other.h;
+	}
+};
+
+/** Struct to store information about an object's dimensions as floats.
+ * It defines operator<, so it can be used in a map or unordered_map. 
+ * It also defines operator==. */
+struct FDimensions {
+	float w, h;
+	bool operator<(const FDimensions& other) const {
+		if (w == other.w)
+			return h < other.h;
+		return w < other.w;
+	}
+	bool operator==(const FDimensions& other) const {
+		return w == other.w && h == other.h;
+	}
+};
+
+/** Struct to store information about an object's coordinates as ints.
+ * It defines operator<, so it can be used in a map or unordered_map. 
+ * It also defines operator==. */
+struct Coordinates {
+	int x, y;
+	bool operator<(const Coordinates& other) const {
+		if (x == other.x)
+			return y < other.y;
+		return x < other.x;
+	}
+	bool operator==(const Coordinates& other) const {
+		return x == other.x && y == other.y;
+	}
+};
+
+/** Struct to store information about an object's coordinates as floats.
+ * It defines operator<, so it can be used in a map or unordered_map. 
+ * It also defines operator==. */
+struct FCoordinates {
+	float x, y;
+	bool operator<(const FCoordinates& other) const {
+		if (x == other.x)
+			return y < other.y;
+		return x < other.x;
+	}
+	bool operator==(const FCoordinates& other) const {
+		return x == other.x && y == other.y;
+	}
+};
+
 /** Class to store and manage SDL2 resources. */
 class Base {
 
@@ -68,13 +137,6 @@ private:
 			SDL_Quit();
 		}
 	};
-
-	// Custom types
-
-	using Window = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
-	using Renderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>;
-	using Surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
-	using Texture = std::shared_ptr<SDL_Texture>;
 
 	// Variables
 
@@ -126,68 +188,7 @@ private:
 		}
 	}
 
-
-public:
-
-	/** Struct to store information about an object's dimensions as integers.
-	 * It defines operator<, so it can be used in a map or unordered_map. 
-	 * It also defines operator==. */
-	struct Dimensions {
-		int w, h;
-		bool operator<(const Dimensions& other) const {
-			if (w == other.w)
-				return h < other.h;
-			return w < other.w;
-		}
-		bool operator==(const Dimensions& other) const {
-			return w == other.w && h == other.h;
-		}
-	};
-
-	/** Struct to store information about an object's dimensions as floats.
-	 * It defines operator<, so it can be used in a map or unordered_map. 
-	 * It also defines operator==. */
-	struct FDimensions {
-		float w, h;
-		bool operator<(const FDimensions& other) const {
-			if (w == other.w)
-				return h < other.h;
-			return w < other.w;
-		}
-		bool operator==(const FDimensions& other) const {
-			return w == other.w && h == other.h;
-		}
-	};
-
-	/** Struct to store information about an object's coordinates as ints.
-	 * It defines operator<, so it can be used in a map or unordered_map. 
-	 * It also defines operator==. */
-	struct Coordinates {
-		int x, y;
-		bool operator<(const Coordinates& other) const {
-			if (x == other.x)
-				return y < other.y;
-			return x < other.x;
-		}
-		bool operator==(const Coordinates& other) const {
-			return x == other.x && y == other.y;
-		}
-	};
-
-	/** Struct to store information about an object's coordinates as floats.
-	 * It defines operator<, so it can be used in a map or unordered_map. 
-	 * It also defines operator==. */
-	struct FCoordinates {
-		float x, y;
-		bool operator<(const FCoordinates& other) const {
-			if (x == other.x)
-				return y < other.y;
-			return x < other.x;
-		}
-		bool operator==(const FCoordinates& other) const {
-			return x == other.x && y == other.y;
-		}
-	};
+	public:
 
 	/** Constructor of the Base class.
 	 * Throws runtime_error on failure. */
@@ -346,5 +347,8 @@ public:
 		return dim;
 	}
 };
+
+}
+
 
 #endif

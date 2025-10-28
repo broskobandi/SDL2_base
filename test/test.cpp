@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 
+using namespace Sdl2Base;
+
 struct Test {
 	void run_tests() {
 		Base base(
