@@ -31,7 +31,9 @@ SOFTWARE.
 #define SDL2_BASE_HPP
 
 #include <SDL2/SDL.h>
+#include <cstddef>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -229,7 +231,7 @@ private:
 		)
 	{}
 
-	/** Sets the renderers color.
+	/** Sets the renderer's color.
 	 * Throws runtime_error on failure.
 	 * \param col The desired color. */
 	void set_draw_color(SDL_Color col) {
@@ -345,6 +347,19 @@ private:
 		Dimensions dim;
 		SDL_GetWindowSize(win.get(), &dim.w, &dim.h);
 		return dim;
+	}
+
+	/** Constructs a map of of paths and the corresponding textures.
+	 * \param paths_to_bmps A vector containing the paths to bmp files. 
+	 * \return A map containing pairs of paths and their corresponding textures. */
+	auto create_textures_map(std::vector<std::string_view> paths_to_bmps) {
+		std::map<std::string_view, Texture> map;
+		std::size_t i = 0;
+		for (auto tex : textures) {
+			map.emplace(paths_to_bmps.at(i), tex);
+			i++;
+		}
+		return map;
 	}
 };
 
