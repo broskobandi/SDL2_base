@@ -190,6 +190,8 @@ namespace SDL2_Base {
 				}
 			);
 			textures_map.emplace(path_to_bmp, tex);
+			DBGMSG("Texture loaded from bmp:");
+			DBGMSG(path_to_bmp);
 		}
 
 		/** Checks if the texture was loaded.
@@ -210,6 +212,8 @@ namespace SDL2_Base {
 				load_texture(bmp);
 				tex = textures_map.find(std::string(bmp));
 			}
+			DBGMSG("Texture found for bmp:");
+			DBGMSG(bmp);
 			return tex->second;
 		}
 
@@ -222,6 +226,7 @@ namespace SDL2_Base {
 				auto tex = get_texture(bmp);
 				map.emplace(bmp, tex);
 			}
+			DBGMSG("String/Texture map created.");
 			return map;
 		}
 	};
