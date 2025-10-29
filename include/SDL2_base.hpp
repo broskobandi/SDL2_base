@@ -164,18 +164,35 @@ namespace SDL2_Base {
 			SDL_RenderPresent(ren.get());
 		}
 
+		/** Checks if the texture was loaded.
+		 * @param bmp Path to the bmp.
+		 * @return a boolean indicating the result. */
+		bool is_texture_loaded(std::string_view bmp) {
+			auto tex = textures_map.find(std::string(bmp));
+			return tex != textures_map.end();
+		}
+
 		/** Creates a Texture from a bmp file and stores the path and the 
 		 * resulting texture in a std::map. 
 		 * @param path_to_bmp Path to the bmp file. 
 		 * @throws std::runtime_error on failure. */
 		void load_texture(std::string_view path_to_bmp) {
+			if (is_texture_loaded(path_to_bmp)) {
+				DBGMSG("Texture has already been loaded for bmp:");
+				DBGMSG(path_to_bmp);
+			}
 			Surface sur(
 				[&](){
 					auto s = SDL_LoadBMP(path_to_bmp.data());
 					if (!s) throw std::runtime_error("Failed to load bmp.");
+					DBGMSG("Texture created from bmp:");
+					DBGMSG(path_to_bmp);
 					return s;
 				}(),
-				[](SDL_Surface* s){if (s) SDL_FreeSurface(s); }
+				[](SDL_Surface* s){
+					if (s) SDL_FreeSurface(s);
+					DBGMSG("Surface freed.");
+				}
 			);
 			Texture tex(
 				[&](){
@@ -187,22 +204,14 @@ namespace SDL2_Base {
 				}(),
 				[](SDL_Texture* t){
 					if (t) SDL_DestroyTexture(t);
+					DBGMSG("Texture destroyed.");
 				}
 			);
 			textures_map.emplace(path_to_bmp, tex);
-			DBGMSG("Texture loaded from bmp:");
-			DBGMSG(path_to_bmp);
 		}
 
-		/** Checks if the texture was loaded.
-		 * @param bmp Path to the bmp.
-		 * @return a boolean indicating the result. */
-		bool is_texture_loaded(std::string_view bmp) {
-			auto tex = textures_map.find(std::string(bmp));
-			return tex == textures_map.end();
-		}
-
-		/** Returns a shared pointer to a Texture.
+		/** Returns a shared pointer to a Texture. 
+		 * It loads the texture lazily if it hasn't been loaded before.
 		 * @param bmp Path to the bmp. 
 		 * @return The Texture.
 		 * @throws std::runtime_error on failure. */
@@ -218,8 +227,9 @@ namespace SDL2_Base {
 		}
 
 		/** Returns a map of Strings and Textures associated.
-		 * Loads textures that have not been loaded lazily.
-		 * @param bmps A list of bmps to return a map to.*/
+		 * Loads textures that have not been loaded before lazily.
+		 * @param bmps A list of bmps to return a map to.
+		 * @throws std::runtime_error on failure. */
 		auto get_textures_map(std::vector<std::string_view> bmps) {
 			std::map<std::string, Texture> map;
 			for (auto bmp : bmps) {

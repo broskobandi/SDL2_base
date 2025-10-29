@@ -15,6 +15,8 @@ int main(void) {
 			SDL_RENDERER_PRESENTVSYNC
 		);
 		CTEST(SDL_WasInit(SDL_INIT_EVERYTHING) == SDL_INIT_EVERYTHING);
+		base.load_texture("../assets/face.bmp");
+		CTEST(base.is_texture_loaded("../assets/face.bmp"));
 	} catch (const std::runtime_error& e) {
 		std::cerr << e.what() << "\n";
 	}
