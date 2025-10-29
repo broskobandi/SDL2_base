@@ -31,10 +31,12 @@ SOFTWARE.
 #define SDL2_BASE_HPP
 
 #include <SDL2/SDL.h>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
 #include <iostream>
+#include <vector>
 
 #ifndef NDEBUG
 #define DBGMSG(message)\
@@ -50,7 +52,7 @@ namespace SDL2_Base {
 	using Window =std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
 	using Renderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>;
 	using Surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
-	using Texture = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>;
+	using Texture = std::shared_ptr<SDL_Texture>;
 	using Rect = SDL_Rect;
 	using FRect = SDL_FRect;
 	using Event = SDL_Event;
@@ -69,6 +71,9 @@ namespace SDL2_Base {
 			
 			public:
 
+			/** Constructor of the SDL class.
+			 * \param flags SDL init flags.
+			 * \throws std::runtime_error on failure. */
 			SDL(Uint32 flags) : flags(flags) {
 				if (SDL_Init(flags))
 					throw std::runtime_error("Failed to init SDL.");
@@ -90,6 +95,7 @@ namespace SDL2_Base {
 		Renderer ren;
 		[[maybe_unused]] Event event;
 		[[maybe_unused]] bool is_running {true};
+		std::map<std::string, Texture> textures_map;
 
 		public:
 
@@ -99,7 +105,8 @@ namespace SDL2_Base {
 		 * @param w The width of the window.
 		 * @param h the height of the window.
 		 * @param win_flags SDL2 window flag(s) separated by '|'.
-		 * @param ren_flags SDL2 renderer flag(s) separated by '|'. */
+		 * @param ren_flags SDL2 renderer flag(s) separated by '|'.
+		 * @throws std::runtime_error on failure. */
 		Base(
 			Uint32 init_flags,
 			std::string_view title,
@@ -152,9 +159,70 @@ namespace SDL2_Base {
 				throw std::runtime_error("Failed to clear renderer.");
 		}
 
-		/** Presents renderer. */
+		/** Presents the renderer. */
 		void present() {
 			SDL_RenderPresent(ren.get());
+		}
+
+		/** Creates a Texture from a bmp file and stores the path and the 
+		 * resulting texture in a std::map. 
+		 * @param path_to_bmp Path to the bmp file. 
+		 * @throws std::runtime_error on failure. */
+		void load_texture(std::string_view path_to_bmp) {
+			Surface sur(
+				[&](){
+					auto s = SDL_LoadBMP(path_to_bmp.data());
+					if (!s) throw std::runtime_error("Failed to load bmp.");
+					return s;
+				}(),
+				[](SDL_Surface* s){if (s) SDL_FreeSurface(s); }
+			);
+			Texture tex(
+				[&](){
+					auto t =
+						SDL_CreateTextureFromSurface(ren.get(), sur.get());
+					if (!t)
+						throw std::runtime_error("Failed to create texture.");
+					return t;
+				}(),
+				[](SDL_Texture* t){
+					if (t) SDL_DestroyTexture(t);
+				}
+			);
+			textures_map.emplace(path_to_bmp, tex);
+		}
+
+		/** Checks if the texture was loaded.
+		 * @param bmp Path to the bmp.
+		 * @return a boolean indicating the result. */
+		bool is_texture_loaded(std::string_view bmp) {
+			auto tex = textures_map.find(std::string(bmp));
+			return tex == textures_map.end();
+		}
+
+		/** Returns a shared pointer to a Texture.
+		 * @param bmp Path to the bmp. 
+		 * @return The Texture.
+		 * @throws std::runtime_error on failure. */
+		Texture get_texture(std::string_view bmp) {
+			auto tex = textures_map.find(std::string(bmp));
+			if (tex == textures_map.end()) {
+				load_texture(bmp);
+				tex = textures_map.find(std::string(bmp));
+			}
+			return tex->second;
+		}
+
+		/** Returns a map of Strings and Textures associated.
+		 * Loads textures that have not been loaded lazily.
+		 * @param bmps A list of bmps to return a map to.*/
+		auto get_textures_map(std::vector<std::string_view> bmps) {
+			std::map<std::string, Texture> map;
+			for (auto bmp : bmps) {
+				auto tex = get_texture(bmp);
+				map.emplace(bmp, tex);
+			}
+			return map;
 		}
 	};
 }
