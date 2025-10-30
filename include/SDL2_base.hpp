@@ -87,6 +87,10 @@ namespace SDL2_Base {
 		RUNNING
 	};
 
+	enum Key {
+		Q,
+	};
+
 	struct Coordinates {
 		int x, y;
 		bool operator<(const Coordinates& other) const {
@@ -357,10 +361,22 @@ namespace SDL2_Base {
 			this->state = state;
 		}
 
-		/** Return a reference to the 'event' variable.
-		 * @return A reference to the event variable.*/
-		SDL_Event& get_event() {
-			return event;
+		/** Poll for currecntly pending events. */
+		void poll_events() {
+			while (SDL_PollEvent(&event)) {}
+		}
+
+		/** Check whether the given key was pressed (case insensitive).
+		 * @return A boolean indicating the result. */
+		bool is_key_pressed(Key key) {
+			SDL_Scancode scancode;
+			switch (key) {
+				case Q:
+					scancode = SDL_SCANCODE_Q;
+			}
+			if (SDL_GetKeyboardState(nullptr)[scancode])
+				return true;
+			return false;
 		}
 
 	};
