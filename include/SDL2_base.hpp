@@ -31,6 +31,7 @@ SOFTWARE.
 #define SDL2_BASE_HPP
 
 #include <SDL2/SDL.h>
+#include <cmath>
 #include <map>
 #include <memory>
 #include <optional>
@@ -81,6 +82,30 @@ namespace SDL2_Base {
 		SDL_FRect* dstrect;
 		float angle;
 		SDL_RendererFlip flip;
+	};
+
+	struct Coordinates {
+		int x, y;
+		bool operator<(const Coordinates& other) const {
+			if (x == other.x)
+				return y < other.y;
+			return x < other.x;
+		}
+		bool operator==(const Coordinates& other) const {
+			return x == other.x && y == other.y;
+		}
+	};
+
+	struct CoordinatesF {
+		float x, y;
+		bool operator<(const CoordinatesF& other) const {
+			if (x == other.x)
+				return y < other.y;
+			return x < other.x;
+		}
+		bool operator==(const CoordinatesF& other) const {
+			return x == other.x && y == other.y;
+		}
 	};
 
 	// Main class
@@ -235,7 +260,10 @@ namespace SDL2_Base {
 					DBGMSG("Texture destroyed.");
 				}
 			);
-			textures_map.emplace(path_to_bmp, tex);
+			auto pair = textures_map.emplace(path_to_bmp, tex);
+			if (!pair.second)
+				throw std::runtime_error("Failed to emplace into textures_map.");
+			DBGMSG("New texture emplaced into textures_map.");
 		}
 
 		/** Returns a shared pointer to a Texture. 
