@@ -55,6 +55,34 @@ namespace SDL2_Base {
 	using Surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
 	using Texture = std::shared_ptr<SDL_Texture>;
 
+	// Structs and enums
+	
+	struct ColorRenderArgs {
+		SDL_Rect rect;
+		SDL_Color col;
+	};
+
+	struct ColorRenderArgsF {
+		SDL_FRect rect;
+		SDL_Color col;
+	};
+
+	struct TextureRenderArgs {
+		Texture tex;
+		SDL_Rect* srcrect;
+		SDL_Rect* dstrect;
+		float angle;
+		SDL_RendererFlip flip;
+	};
+
+	struct TextureRenderArgsF {
+		Texture tex;
+		SDL_Rect* srcrect;
+		SDL_FRect* dstrect;
+		float angle;
+		SDL_RendererFlip flip;
+	};
+
 	// Main class
 
 	/** Class store and manage SDL2_Base resources. */
@@ -72,8 +100,8 @@ namespace SDL2_Base {
 			public:
 
 			/** Constructor of the SDL class.
-			 * \param flags SDL init flags.
-			 * \throws std::runtime_error on failure. */
+			 * @param flags SDL init flags.
+			 * @throws std::runtime_error on failure. */
 			SDL(Uint32 flags) : flags(flags) {
 				if (SDL_Init(flags))
 					throw std::runtime_error("Failed to init SDL.");
@@ -240,62 +268,50 @@ namespace SDL2_Base {
 			return map;
 		}
 
-		/** Draws a rectangle that's filled with the specified color.
-		 * @param dstrect The destination rectangle. 
-		 * @parama col The desired color of th rectangle.
+		/** Draws and fills a rectangle.
+		 * @param args Struct containing rendering arguments.
 		 * @throws std::runtime_error on failure. */
-		void draw(SDL_Rect dstrect, SDL_Color col) {
+		void draw(ColorRenderArgs args) {
+			SDL_Rect rect = args.rect;
+			SDL_Color col = args.col;
 			if (SDL_SetRenderDrawColor(ren.get(), col.r, col.g, col.b, col.a))
 				throw std::runtime_error("Failed to set draw color.");
-			if (SDL_RenderFillRect(ren.get(), &dstrect))
+			if (SDL_RenderFillRect(ren.get(), &rect))
 				throw std::runtime_error("Failed to fill rect.");
 		}
 
-		/** Draws a rectangle that's filled with the specified color (float).
-		 * @param dstrect The destination rectangle. 
-		 * @parama col The desired color of th rectangle.
+		/** Draws and fills a rectangle (float).
+		 * @param args Struct containing rendering arguments.
 		 * @throws std::runtime_error on failure. */
-		void draw(SDL_FRect dstfrect, SDL_Color col) {
+		void draw(ColorRenderArgsF args) {
+			SDL_FRect rect = args.rect;
+			SDL_Color col = args.col;
 			if (SDL_SetRenderDrawColor(ren.get(), col.r, col.g, col.b, col.a))
 				throw std::runtime_error("Failed to set draw color.");
-			if (SDL_RenderFillRectF(ren.get(), &dstfrect))
+			if (SDL_RenderFillRectF(ren.get(), &rect))
 				throw std::runtime_error("Failed to fill rect.");
 		}
 
 		/** Draws a texture.
-		 * @param tex The texture to draw.
-		 * @param srcrect A pointer to the reqion on the texture to be drawn
-		 * (pass nullptr to render the whole texture).
-		 * @param dstrect A pointer to the rectangle to draw the texture on
-		 * (pass nullptr to render on the whole render target).
-		 * @param angle The angle to rotate the texture with (pass 0.0 to not rotate).
-		 * @param flip Value indicating whether to flip the texture on tho horizontal or 
-		 * vertical axis (pass SDL_FLIP_NONE for not flipping). */
-		void draw(
-			Texture tex, SDL_Rect* srcrect,
-			SDL_Rect* dstrect, float angle,
-			SDL_RendererFlip flip
-		) {
-			if (SDL_RenderCopyEx(ren.get(), tex.get(), srcrect, dstrect, angle, nullptr, flip))
-				throw std::runtime_error("Failed to render texxture.");
+		 * @param args Struct containing the rendering arguments. 
+		 * @throws std::runtime_error on failure. */
+		void draw(TextureRenderArgs args) {
+			if (SDL_RenderCopyEx(
+				ren.get(), args.tex.get(), args.srcrect,
+				args.dstrect, args.angle, nullptr, args.flip)
+			)
+				throw std::runtime_error("Failed to draw texture.");
 		}
 
-		/** Draws a texture. (float)
-		 * @param tex The texture to draw.
-		 * @param srcrect A pointer to the reqion on the texture to be drawn
-		 * (pass nullptr to render the whole texture).
-		 * @param dstrect A pointer to the rectangle to draw the texture on
-		 * (pass nullptr to render on the whole render target).
-		 * @param angle The angle to rotate the texture with (pass 0.0 to not rotate).
-		 * @param flip Value indicating whether to flip the texture on tho horizontal or 
-		 * vertical axis (pass SDL_FLIP_NONE for not flipping). */
-		void draw(
-			Texture tex, SDL_Rect* srcrect,
-			SDL_FRect* dstrect, float angle,
-			SDL_RendererFlip flip
-		) {
-			if (SDL_RenderCopyExF(ren.get(), tex.get(), srcrect, dstrect, angle, nullptr, flip))
-				throw std::runtime_error("Failed to render texxture.");
+		/** Draws a texture (float).
+		 * @param args Struct containing the rendering arguments. 
+		 * @throws std::runtime_error on failure. */
+		void draw(TextureRenderArgsF args) {
+			if (SDL_RenderCopyExF(
+				ren.get(), args.tex.get(), args.srcrect,
+				args.dstrect, args.angle, nullptr, args.flip)
+			)
+				throw std::runtime_error("Failed to draw texture.");
 		}
 	};
 }
