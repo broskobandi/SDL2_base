@@ -33,6 +33,7 @@ SOFTWARE.
 #include <SDL2/SDL.h>
 #include <map>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string_view>
 #include <iostream>
@@ -53,9 +54,8 @@ namespace SDL2_Base {
 	using Renderer = std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)>;
 	using Surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
 	using Texture = std::shared_ptr<SDL_Texture>;
-	using Rect = SDL_Rect;
-	using FRect = SDL_FRect;
-	using Event = SDL_Event;
+
+	// Main class
 
 	/** Class store and manage SDL2_Base resources. */
 	class Base {
@@ -93,7 +93,7 @@ namespace SDL2_Base {
 		SDL sdl;
 		Window win;
 		Renderer ren;
-		[[maybe_unused]] Event event;
+		[[maybe_unused]] SDL_Event event;
 		[[maybe_unused]] bool is_running {true};
 		std::map<std::string, Texture> textures_map;
 
@@ -238,6 +238,64 @@ namespace SDL2_Base {
 			}
 			DBGMSG("String/Texture map created.");
 			return map;
+		}
+
+		/** Draws a rectangle that's filled with the specified color.
+		 * @param dstrect The destination rectangle. 
+		 * @parama col The desired color of th rectangle.
+		 * @throws std::runtime_error on failure. */
+		void draw(SDL_Rect dstrect, SDL_Color col) {
+			if (SDL_SetRenderDrawColor(ren.get(), col.r, col.g, col.b, col.a))
+				throw std::runtime_error("Failed to set draw color.");
+			if (SDL_RenderFillRect(ren.get(), &dstrect))
+				throw std::runtime_error("Failed to fill rect.");
+		}
+
+		/** Draws a rectangle that's filled with the specified color (float).
+		 * @param dstrect The destination rectangle. 
+		 * @parama col The desired color of th rectangle.
+		 * @throws std::runtime_error on failure. */
+		void draw(SDL_FRect dstfrect, SDL_Color col) {
+			if (SDL_SetRenderDrawColor(ren.get(), col.r, col.g, col.b, col.a))
+				throw std::runtime_error("Failed to set draw color.");
+			if (SDL_RenderFillRectF(ren.get(), &dstfrect))
+				throw std::runtime_error("Failed to fill rect.");
+		}
+
+		/** Draws a texture.
+		 * @param tex The texture to draw.
+		 * @param srcrect A pointer to the reqion on the texture to be drawn
+		 * (pass nullptr to render the whole texture).
+		 * @param dstrect A pointer to the rectangle to draw the texture on
+		 * (pass nullptr to render on the whole render target).
+		 * @param angle The angle to rotate the texture with (pass 0.0 to not rotate).
+		 * @param flip Value indicating whether to flip the texture on tho horizontal or 
+		 * vertical axis (pass SDL_FLIP_NONE for not flipping). */
+		void draw(
+			Texture tex, SDL_Rect* srcrect,
+			SDL_Rect* dstrect, float angle,
+			SDL_RendererFlip flip
+		) {
+			if (SDL_RenderCopyEx(ren.get(), tex.get(), srcrect, dstrect, angle, nullptr, flip))
+				throw std::runtime_error("Failed to render texxture.");
+		}
+
+		/** Draws a texture. (float)
+		 * @param tex The texture to draw.
+		 * @param srcrect A pointer to the reqion on the texture to be drawn
+		 * (pass nullptr to render the whole texture).
+		 * @param dstrect A pointer to the rectangle to draw the texture on
+		 * (pass nullptr to render on the whole render target).
+		 * @param angle The angle to rotate the texture with (pass 0.0 to not rotate).
+		 * @param flip Value indicating whether to flip the texture on tho horizontal or 
+		 * vertical axis (pass SDL_FLIP_NONE for not flipping). */
+		void draw(
+			Texture tex, SDL_Rect* srcrect,
+			SDL_FRect* dstrect, float angle,
+			SDL_RendererFlip flip
+		) {
+			if (SDL_RenderCopyExF(ren.get(), tex.get(), srcrect, dstrect, angle, nullptr, flip))
+				throw std::runtime_error("Failed to render texxture.");
 		}
 	};
 }
