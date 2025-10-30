@@ -356,6 +356,13 @@ namespace SDL2_Base {
 		void set_state(State state) {
 			this->state = state;
 		}
+
+		/** Return a reference to the 'event' variable.
+		 * @return A reference to the event variable.*/
+		SDL_Event& get_event() {
+			return event;
+		}
+
 	};
 }
 
