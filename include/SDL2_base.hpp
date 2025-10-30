@@ -31,10 +31,8 @@ SOFTWARE.
 #define SDL2_BASE_HPP
 
 #include <SDL2/SDL.h>
-#include <cmath>
 #include <map>
 #include <memory>
-#include <optional>
 #include <stdexcept>
 #include <string_view>
 #include <iostream>
@@ -82,6 +80,11 @@ namespace SDL2_Base {
 		SDL_FRect* dstrect;
 		float angle;
 		SDL_RendererFlip flip;
+	};
+
+	enum State {
+		QUITTING,
+		RUNNING
 	};
 
 	struct Coordinates {
@@ -147,7 +150,7 @@ namespace SDL2_Base {
 		Window win;
 		Renderer ren;
 		[[maybe_unused]] SDL_Event event;
-		[[maybe_unused]] bool is_running {true};
+		[[maybe_unused]] State state {RUNNING};
 		std::map<std::string, Texture> textures_map;
 
 		public:
@@ -340,6 +343,18 @@ namespace SDL2_Base {
 				args.dstrect, args.angle, nullptr, args.flip)
 			)
 				throw std::runtime_error("Failed to draw texture.");
+		}
+
+		/** Return the current value of the inner 'state' variable.
+		 * @return The state. */
+		State get_state() {
+			return state;
+		}
+
+		/** Set the value of the inner 'state' variable.
+		 * @param state The new state.*/
+		void set_state(State state) {
+			this->state = state;
 		}
 	};
 }
